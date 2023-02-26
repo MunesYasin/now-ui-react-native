@@ -1,39 +1,91 @@
 import React from "react";
-import { StyleSheet, Dimensions, ScrollView } from "react-native";
+import { StyleSheet, Dimensions, View, FlatList, Image, ScrollView } from "react-native";
 import { Block, theme, Text } from "galio-framework";
-
+import HomeHeader from "../components/HomeHeader"
 import { Card, Button } from "../components";
 import articles from "../constants/articles";
+import axios from "../assets/config/axios"
+import { TouchableOpacity } from "react-native-gesture-handler";
+import DefaultImage from "../assets/imgs/profile-pic.png"
+import OtherUSerDetails from "./otherUserDetails"
+import BottomBar from "../components/bottomBar"
+import { connect } from 'react-redux';
 const { width } = Dimensions.get("screen");
 
 class Home extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      my_users_list: null,
+      selectedUser: null,
+      selectedCategouries:null
+    }
+  }
+  componentDidMount() {
+    let params = {}
+    axios.post("/getMyUsersList", params).then(res => {
+      this.setState({ my_users_list: res.data })
+    }).catch(error => {
+      console.log(error)
+    })
+  }
+
+
+
   renderArticles = () => {
     return (
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.articles}
-      >
-        <Block flex>
-        <Card item={articles[0]} horizontal />
-          <Block flex row>
-            <Card
-              item={articles[1]}
-              style={{ marginRight: theme.SIZES.BASE }}
-            />
-            <Card item={articles[2]} />
-          </Block>
-          <Card item={articles[3]} horizontal />
-          <Card item={articles[4]} full />
-        </Block>
-      </ScrollView>
+      <>
+        <HomeHeader search />
+
+        {
+          // this.state.selectedUser ?
+          //   <View style={{marginTop:-470}}>
+          //     <OtherUSerDetails />
+
+          //   </View>
+          //   :
+            this.state.my_users_list &&
+            <ScrollView
+
+
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.articles}
+            >
+              {this.state.my_users_list.map(ele => {
+                return (
+                  <TouchableOpacity style={styles.home} onPress={() => {
+                    this.setState({ selectedUser: ele.id , selectedCategouries : ele.categouries })
+
+                    this.props.selectUser({selected_user_id: ele.id , selected_user_categouries : ele.categouries})
+                    this.props.navigation.navigate('OtherUserDetails')
+                  }}>
+
+                    <Card item={{
+                      title: ele.name,
+                      image: ele.imageURL ? ele.imageURL : require("../assets/imgs/profile-pic.png"),
+                      horizontal: true
+
+                    }} horizontal />
+                  </TouchableOpacity>
+
+
+                );
+              })}
+            </ScrollView >
+
+        }
+
+
+      </>
     );
   };
 
   render() {
     return (
-      <Block flex center style={styles.home}>
-        {this.renderArticles()}
-      </Block>
+      // <Block flex center style={styles.home}>
+      this.renderArticles()
+      // </Block>
     );
   }
 }
@@ -48,7 +100,52 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
     fontFamily: 'montserrat-regular'
 
-  }
+  },
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 10,
+    padding: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 10,
+    marginHorizontal: 20,
+    elevation: 3,
+    shadowOffset: { width: 1, height: 1 },
+    shadowColor: "#333",
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+  },
+  imageContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    overflow: "hidden",
+  },
+  image: {
+    width: "100%",
+    height: "100%",
+  },
+  title: {
+    marginLeft: 20,
+    position: "absolute",
+    left: 70,
+    fontSize: 18,
+    fontWeight: "bold",
+  },
 });
 
-export default Home;
+
+const mapStateToProps = state => ({
+
+});
+
+const mapDispatchToProps = dispatch => ({
+  selectUser: value => dispatch({ type: 'select_user_from_my_list', payload: value })
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Home);
+
+
+
+
+

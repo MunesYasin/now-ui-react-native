@@ -1,8 +1,8 @@
 export default [
   {
-    title: 'Society has put up so many boundaries',
+    title: 'Munes Nawwaf Fawzi Yasin',
     image: require("../assets/imgs/project13.jpg"),
-    cta: 'View article',
+    // cta: 'View article',
     horizontal: true
   },
   {

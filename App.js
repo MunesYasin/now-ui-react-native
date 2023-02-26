@@ -8,7 +8,9 @@ import { NavigationContainer } from '@react-navigation/native';
 
 import Screens from './navigation/Screens';
 import { Images, articles, nowTheme } from './constants';
-
+import MainContext from "./mainContext"
+import { Provider } from 'react-redux';
+import store from './store';
 // cache app images
 const assetImages = [
   Images.Onboarding,
@@ -63,13 +65,17 @@ export default class App extends React.Component {
       );
     } else {
       return (
-        <NavigationContainer>
-          <GalioProvider theme={nowTheme}>
-            <Block flex>
-              <Screens />
-            </Block>
-          </GalioProvider>
-        </NavigationContainer>
+        <Provider store={store}>
+
+
+          <NavigationContainer>
+            <GalioProvider theme={nowTheme}>
+              <Block flex>
+                <Screens />
+              </Block>
+            </GalioProvider>
+          </NavigationContainer>
+        </Provider>
       );
     }
   }

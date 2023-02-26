@@ -28,17 +28,26 @@ class Card extends React.Component {
       horizontal ? styles.horizontalStyles : styles.verticalStyles,
       styles.shadow
     ];
-
+//
     return (
       <Block row={horizontal} card flex style={cardContainer}>
         <TouchableWithoutFeedback onPress={() => navigation.navigate('Pro')}>
           <Block flex style={imgContainer}>
-            <Image resizeMode="cover" source={item.image} style={imageStyles} />
+            <Image resizeMode="contains" source={item.image} style={imageStyles} />
           </Block>
         </TouchableWithoutFeedback>
         <TouchableWithoutFeedback onPress={() => navigation.navigate('Pro')}>
           <Block flex space="between" style={styles.cardDescription}>
             <Block flex>
+              <Text
+                style={{ fontFamily: 'montserrat-regular' }}
+                size={14}
+                style={titleStyles}
+                color={nowTheme.COLORS.SECONDARY}
+              >
+                {item.title}
+              </Text>
+
               <Text
                 style={{ fontFamily: 'montserrat-regular' }}
                 size={14}
@@ -87,7 +96,7 @@ class Card extends React.Component {
                   <Block />
                 )}
             </Block>
-            <Block right={ctaRight ? true : false}>
+            {/* <Block right={ctaRight ? true : false}>
               <Text
                 style={styles.articleButton}
                 size={12}
@@ -97,7 +106,7 @@ class Card extends React.Component {
               >
                 {item.cta}
               </Text>
-            </Block>
+            </Block> */}
           </Block>
         </TouchableWithoutFeedback>
       </Block>
@@ -122,18 +131,20 @@ const styles = StyleSheet.create({
     marginVertical: theme.SIZES.BASE,
     borderWidth: 0,
     minHeight: 114,
-    marginBottom: 4
+    marginBottom: 4,
+
   },
   cardTitle: {
     paddingHorizontal: 9,
     paddingTop: 7,
-    paddingBottom: 15
+    paddingBottom: 15,
+    marginLeft:-70
   },
   cardDescription: {
     padding: theme.SIZES.BASE / 2
   },
   imageContainer: {
-    borderRadius: 3,
+    borderRadius: 7,
     elevation: 1,
     overflow: 'hidden'
   },
@@ -142,7 +153,8 @@ const styles = StyleSheet.create({
   },
   horizontalImage: {
     height: 122,
-    width: 'auto'
+    width: 100,
+    borderRadius:100
   },
   horizontalStyles: {
     borderTopRightRadius: 0,

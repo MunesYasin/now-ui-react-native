@@ -24,6 +24,14 @@
     "ios": {
       "supportsTablet": true
     },
-    "description": "Now UI React Native, based on Now UI Design System. Coded by Creative Tim"
+    "description": "Now UI React Native, based on Now UI Design System. Coded by Creative Tim",
+    "resolver": {
+      "blacklistRE": [
+        "/nodejs-assets\/.*/",
+        "/android\/.*/",
+        "/ios\/.*/"
+      ]
+    }
+  
   }
 }

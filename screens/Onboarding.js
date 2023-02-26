@@ -1,7 +1,13 @@
 import React from 'react';
 import { ImageBackground, Image, StyleSheet, StatusBar, Dimensions, Platform } from 'react-native';
-import { Block, Button, Text, theme } from 'galio-framework';
-
+import {AppStyles} from '../Appstyles';
+import {
+  ActivityIndicator,
+  Text,
+  View,
+  Alert,
+  TouchableOpacity,
+} from 'react-native';
 const { height, width } = Dimensions.get('screen');
 import { Images, nowTheme } from '../constants/';
 import { HeaderHeight } from '../constants/utils';
@@ -11,120 +17,102 @@ export default class Onboarding extends React.Component {
     const { navigation } = this.props;
 
     return (
-      <Block flex style={styles.container}>
-        <StatusBar barStyle="light-content" />
-        <Block flex>
-          <ImageBackground
-            source={Images.Onboarding}
-            style={{ flex: 1, height: height, width, zIndex: 1 }}
-          />
-          <Block space="between" style={styles.padded}>
-            <Block>
-              <Block middle>
-                <Image source={Images.NowLogo} style={{ width: 115, height: 124, bottom: 200, position: 'absolute' }} />
-              </Block>
-              <Block>
-                <Block middle>
-                  <Text
-                    style={{
-                      fontFamily: 'montserrat-regular', bottom: 50, position: 'absolute', letterSpacing: 2, paddingHorizontal: 20, textAlign: 'center'
-                    }}
-                    color="white"
-                    size={44}
-                  >
-                    Now UI
-                    React Native
-                  </Text>
-                </Block>
-              </Block>
-              <Block middle row>
-                <Text
-                  color="white"
-                  size={16}
-                  style={{ fontFamily: 'montserrat-regular' }}
-                >
-                  Designed by
-                </Text>
-                <Image
-                  source={Images.InvisionLogo}
-                  style={{
-                    height: 28,
-                    width: 91,
-                    marginLeft: theme.SIZES.BASE
-                  }}
-                />
-              </Block>
-              <Block middle row style={{ marginTop: 15, marginBottom: 30}}>
-                <Text
-                  color="white"
-                  size={16}
-                  style={{ fontFamily: 'montserrat-regular' }}
-                >
-                  Coded by
-                </Text>
-                <Image
-                  source={Images.CreativeTimLogo}
-                  style={{
-                    height: 29,
-                    width: 129,
-                    marginLeft: theme.SIZES.BASE
-                  }}
-                />
-              </Block>
+      <View style={styles.container}>
+      <Text style={styles.title}>Say hello to your new app</Text>
 
-              <Block
-                row
-                style={{
-                  marginTop: theme.SIZES.BASE * 2.5,
-                  marginBottom: theme.SIZES.BASE * 2
-                }}
-              >
-                <Button
-                  shadowless
-                  style={styles.button}
-                  color={nowTheme.COLORS.PRIMARY}
-                  onPress={() => navigation.navigate('App')}
-                >
-                  <Text
-                    style={{ fontFamily: 'montserrat-bold', fontSize: 14 }}
-                    color={theme.COLORS.WHITE}
-                  >
-                    GET STARTED
-                  </Text>
-                </Button>
-              </Block>
-            </Block>
-          </Block>
-        </Block>
-      </Block>
+      <TouchableOpacity
+        style={styles.loginContainer}
+        onPress={() => navigation.navigate('Sign_In')}>
+        <Text style={styles.loginText}>Log In</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.signupContainer}
+        onPress={() => navigation.navigate('Sign_up')}>
+        <Text style={styles.signupText}>Sign Up</Text>
+      </TouchableOpacity>
+    </View>
     );
   }
 }
 
+// const styles = StyleSheet.create({
+//   container: {
+//     backgroundColor: theme.COLORS.BLACK,
+//     marginTop: Platform.OS === 'android' ? -HeaderHeight : 0
+//   },
+//   padded: {
+//     paddingHorizontal: theme.SIZES.BASE * 2,
+//     zIndex: 3,
+//     position: 'absolute',
+//     bottom: Platform.OS === 'android' ? theme.SIZES.BASE * 2 : theme.SIZES.BASE * 3
+//   },
+//   button: {
+//     width: width - theme.SIZES.BASE * 4,
+//     height: theme.SIZES.BASE * 3,
+//     shadowRadius: 0,
+//     shadowOpacity: 0
+//   },
+
+//   gradient: {
+//     zIndex: 1,
+//     position: 'absolute',
+//     bottom: 0,
+//     left: 0,
+//     right: 0,
+//     height: 66
+//   }
+// });
+
+
+
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: theme.COLORS.BLACK,
-    marginTop: Platform.OS === 'android' ? -HeaderHeight : 0
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 150,
   },
-  padded: {
-    paddingHorizontal: theme.SIZES.BASE * 2,
-    zIndex: 3,
-    position: 'absolute',
-    bottom: Platform.OS === 'android' ? theme.SIZES.BASE * 2 : theme.SIZES.BASE * 3
+  logo: {
+    width: 200,
+    height: 200,
   },
-  button: {
-    width: width - theme.SIZES.BASE * 4,
-    height: theme.SIZES.BASE * 3,
-    shadowRadius: 0,
-    shadowOpacity: 0
+  title: {
+    fontSize: AppStyles.fontSize.title,
+    fontWeight: 'bold',
+    color: AppStyles.color.tint,
+    marginTop: 20,
+    textAlign: 'center',
+    marginBottom: 20,
+    marginLeft: 20,
+    marginRight: 20,
   },
-
-  gradient: {
-    zIndex: 1,
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 66
-  }
+  loginContainer: {
+    alignItems: 'center',
+    width: AppStyles.buttonWidth.main,
+    backgroundColor: AppStyles.color.tint,
+    borderRadius: AppStyles.borderRadius.main,
+    padding: 10,
+    marginTop: 30,
+  },
+  loginText: {
+    color: AppStyles.color.white,
+  },
+  signupContainer: {
+    alignItems: 'center',
+    width: AppStyles.buttonWidth.main,
+    backgroundColor: AppStyles.color.white,
+    borderRadius: AppStyles.borderRadius.main,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: AppStyles.color.tint,
+    marginTop: 15,
+  },
+  signupText: {
+    color: AppStyles.color.tint,
+  },
+  spinner: {
+    marginTop: 200,
+  },
 });
+
+
