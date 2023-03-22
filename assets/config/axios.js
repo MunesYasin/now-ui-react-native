@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { config } from "./config"
-import  AsyncStorage  from '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const instance = axios.create({
   headers: {
@@ -18,9 +18,8 @@ const instance = axios.create({
     return status < 500;
   },
   withCredentials: true,
-  xsrfCookieName:"jwt",
-  xsrfHeaderName:"jwt"
-
+  xsrfCookieName: "jwt",
+  xsrfHeaderName: "jwt"
 });
 
 const getToken = async () => {
@@ -34,27 +33,18 @@ const getToken = async () => {
   }
 };
 
-
-
 // Add a request interceptor
 instance.interceptors.request.use(async function (config) {
-    // Do something before request is sent
-    let token =await getToken();
-
-
-    console.log(config,"++++++++++++++++++++++++++++++++++++++++++++")
-
-
-
-
-    config.data.token=token
-    return config;
-  }, function (error) {
-    // Do something with request error
-    return Promise.reject(error);
-  });
-
+  // Do something before request is sent
+  let token = await getToken();
+  if (token) {
+    // Set the cookie header
+    config.headers.Cookie = `token=${token}`;
+  }
+  return config;
+}, function (error) {
+  // Do something with request error
+  return Promise.reject(error);
+});
 
 export default instance;
-
-

@@ -5,7 +5,7 @@ import axios from '../assets/config/axios';
 import { Modal, TouchableHighlight, Dimensions } from 'react-native';
 import { FontAwesome, Entypo, Ionicons } from '@expo/vector-icons';
 import { connect } from 'react-redux';
-
+import InformationCard from "../components/informationCard"
 import {
     Animated,
     Pressable,
@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { useCardAnimation } from '@react-navigation/stack';
 import { AppStyles } from '../Appstyles';
-
+const { width, height } = Dimensions.get('window');
 function ScanQR(props) {
     const [showDetailsModal, setShowDetailsModal] = useState(false);
     const [userDetails, setUserDetails] = useState(null)
@@ -51,7 +51,7 @@ function ScanQR(props) {
             id: props.selected_user_id,
         }
         axios.post("/deleteUserFromMyList", params).then(res => {
-            setShowDetailsModal(false)
+            props.navigation("Home")
 
         }).catch(error => {
             console.log(error)
@@ -66,13 +66,7 @@ function ScanQR(props) {
                         alignItems: 'center',
                         justifyContent: 'center',
                     }}>
-                    {/* <Pressable
-            style={[
-              StyleSheet.absoluteFill,
-              { backgroundColor: 'rgba(0, 0, 0, 0.5)' },
-            ]}
-            onPress={navigation.goBack}
-          /> */}
+
                     <Animated.View
                         style={[
                             {
@@ -91,84 +85,12 @@ function ScanQR(props) {
                         ]}>
                         {
                             showDetailsModal &&
-
-                            <View style={styles.viewContainer}>
-                                {
-                                    userDetails &&
-                                    <View style={styles.container}>
-                                        <View style={styles.profileHeader}>
-                                            <View style={styles.profileImageWrapper}>
-                                                <Image
-                                                    source={{ uri: 'https://via.placeholder.com/150' }}
-                                                    style={styles.profileImage}
-                                                />
-                                            </View>
-                                            <Text style={styles.profileName}>{userDetails.personalInfo && userDetails.personalInfo.name}</Text>
-                                        </View>
-                                        <View style={styles.profileSection}>
-
-
-                                            {/* ----------------------------------Personal Info section-------------------------------- */}
-                                            {
-                                                userDetails.personalInfo &&
-                                                userDetails.personalInfo.map(ele => {
-                                                    return (
-                                                        <>
-                                                            <View style={styles.sectionRow}>
-                                                                <Ionicons name="mail-outline" size={24} style={styles.sectionIcon} />
-                                                                <Text style={styles.sectionLabel}>{ele.name}:</Text>
-                                                                <Text style={styles.sectionValue}>{ele.value}</Text>
-                                                            </View>
-                                                        </>
-                                                    )
-                                                })
-                                                // <>
-
-                                                //   <View style={styles.sectionRow}>
-                                                //     <Ionicons name="mail-outline" size={24} style={styles.sectionIcon} />
-                                                //     <Text style={styles.sectionLabel}>Email:</Text>
-                                                //     <Text style={styles.sectionValue}>{userDetails.personalInfo.email}</Text>
-                                                //   </View>
-                                                //   <View style={styles.sectionRow}>
-                                                //     <Ionicons name="call-outline" size={24} style={styles.sectionIcon} />
-                                                //     <Text style={styles.sectionLabel}>Phone:</Text>
-                                                //     <Text style={styles.sectionValue}>{userDetails.personalInfo.phoneNumber}</Text>
-                                                //   </View>
-                                                //   <View style={styles.sectionRow}>
-                                                //     <Ionicons name="location-outline" size={24} style={styles.sectionIcon} />
-                                                //     <Text style={styles.sectionLabel}>Location:</Text>
-                                                //     <Text style={styles.sectionValue}>{userDetails.personalInfo.location}</Text>
-                                                //   </View>
-                                                // </>
-                                            }
-                                            {/* ----------------------------------Personal Info section-------------------------------- */}
-
-
-                                            {/* ----------------------------------Social media section-------------------------------- */}
-                                            {
-                                                userDetails.socilaMedia &&
-                                                <View style={styles.sectionRow}>
-
-                                                    {
-                                                        userDetails.socilaMedia.map(ele => {
-                                                            return (
-                                                                <Ionicons name={`logo-${ele.name}`} size={50} style={styles.socialMediaIcon} onPress={() => handleLinkedInClick(ele)} />
-                                                            )
-                                                        })
-                                                    }
-                                                </View>
-                                            }
-                                            {/* ----------------------------------Social media section-------------------------------- */}
-
-
-                                        </View>
-                                        <TouchableOpacity style={styles.saveButton} onPress={handleDeleteUser}>
-                                            <Text style={styles.saveButtonText}>Delete user</Text>
-                                        </TouchableOpacity>
-
-                                    </View>
-                                }
-                            </View>
+                            <>
+                                <InformationCard userDetails={userDetails}/>
+                                <TouchableOpacity style={styles.saveButton} onPress={handleDeleteUser}>
+                                    <Text style={styles.saveButtonText}>Delete user</Text>
+                                </TouchableOpacity>
+                            </>
                         }
                     </Animated.View>
                 </View>
@@ -177,85 +99,83 @@ function ScanQR(props) {
     );
 }
 
+
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        flexDirection: 'column',
-        justifyContent: 'center',
+      flex: 1,
+      flexDirection: 'column',
+      justifyContent: 'center',
     },
     viewAnimated: {
-        width: '100%',
+      width: '100%',
     },
     saveButton: {
-        backgroundColor: AppStyles.color.tint,
-        padding: 10,
-        borderRadius: 5,
-        alignItems: 'center',
-        marginTop: 20,
+      backgroundColor: AppStyles.color.tint,
+      padding: 10,
+      borderRadius: 5,
+      alignItems: 'center',
+      marginTop: 20,
     },
     saveButtonText: {
-        color: 'white',
-        fontSize: 18,
-        fontWeight: 'bold',
+      color: 'white',
+      fontSize: 18,
+      fontWeight: 'bold',
     },
     viewContainer: {
-        flex: 1,
-        padding: 10,
-        // backgroundColor: '#E5E5E5',
-        borderRadius: 20,
+      flex: 1,
+      padding: 10,
+      borderRadius: 20,
     },
-
+  
     profileHeader: {
-        marginTop: -400,
-        alignItems: 'center',
-        marginBottom: 30,
+      marginTop: -height * 0.4,
+      alignItems: 'center',
+      marginBottom: height * 0.03,
     },
     profileImageWrapper: {
-        width: 150,
-        height: 150,
-        borderRadius: 75,
-        overflow: 'hidden',
+      width: width * 0.4,
+      height: width * 0.4,
+      borderRadius: (width * 0.4) / 2,
+      overflow: 'hidden',
     },
     profileImage: {
-        width: '100%',
-        height: '100%',
+      width: '100%',
+      height: '100%',
     },
     profileName: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginTop: 10,
+      fontSize: width * 0.06,
+      fontWeight: 'bold',
+      marginTop: height * 0.01,
     },
     profileSection: {
-        borderTopWidth: 1,
-        borderTopColor: '#DDD',
-        paddingTop: 20,
+      borderTopWidth: 1,
+      borderTopColor: '#DDD',
+      paddingTop: height * 0.02,
     },
     sectionRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 10,
-        marginTop: 5,
-        justifyContent: "space-evenly"
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: height * 0.01,
+      marginTop: height * 0.005,
+      justifyContent: 'space-evenly',
     },
     sectionIcon: {
-        marginRight: 10,
+      marginRight: width * 0.03,
     },
     socialMediaIcon: {
-        marginRight: 10,
-        color: '#3b5998',
+      marginRight: width * 0.03,
+      color: '#3b5998',
     },
     sectionLabel: {
-        flex: 1,
-        fontSize: 18,
+      flex: 1,
+      fontSize: width * 0.045,
     },
     sectionValue: {
-        flex: 3,
-        fontSize: 18,
-        fontWeight: 'bold',
+      flex: 3,
+      fontSize: width * 0.045,
+      fontWeight: 'bold',
     },
-
-});
-
+  });
 const mapStateToProps = state => ({
 
     selected_user_id: state.selected_user_id,

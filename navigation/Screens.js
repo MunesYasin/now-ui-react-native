@@ -29,6 +29,7 @@ import OtherUserDetails from "../screens/otherUserDetails"
 import Welcome from "../screens/welcome"
 import Icon from 'react-native-vector-icons/Ionicons';
 import VarificationAccount from "../screens/VarificationAccount"
+import AddNewProfileData from "../screens/AddNewProfileData"
 const { width } = Dimensions.get('screen');
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -291,7 +292,9 @@ export default function OnboardingStack(props) {
           }}
            name="App" component={AppStack} />
       <Stack.Screen name="OtherUserDetails" component={OtherUserDetails} />
+      <Stack.Screen name="AddNewProfileData" component={AddNewProfileData} />
 
+      
     </Stack.Navigator>
 
   );

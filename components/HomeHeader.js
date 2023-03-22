@@ -117,6 +117,9 @@ class Header extends React.Component {
         placeholderTextColor={'#8898AA'}
         onFocus={() => {
         }}
+        onChangeText={(e)=>{
+         this.props.getInputValue(e) 
+        }}
         iconContent={
           <Icon size={16} color={theme.COLORS.MUTED} name="zoom-bold2x" family="NowExtra" />
         }

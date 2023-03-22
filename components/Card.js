@@ -33,7 +33,7 @@ class Card extends React.Component {
       <Block row={horizontal} card flex style={cardContainer}>
         <TouchableWithoutFeedback onPress={() => navigation.navigate('Pro')}>
           <Block flex style={imgContainer}>
-            <Image resizeMode="contains" source={item.image} style={imageStyles} />
+            <Image resizeMode="contains" source={item.image} style={imageStyles} height={50} width={50} />
           </Block>
         </TouchableWithoutFeedback>
         <TouchableWithoutFeedback onPress={() => navigation.navigate('Pro')}>
@@ -127,21 +127,45 @@ Card.propTypes = {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: theme.COLORS.WHITE,
-    marginVertical: theme.SIZES.BASE,
-    borderWidth: 0,
-    minHeight: 114,
-    marginBottom: 4,
-
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    marginVertical: 8,
+    padding: 16,
+    shadowColor: '#000000',
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 2
   },
-  cardTitle: {
-    paddingHorizontal: 9,
-    paddingTop: 7,
-    paddingBottom: 15,
-    marginLeft:-70
+  title: {
+    fontFamily: 'Montserrat-Bold',
+    fontSize: 16,
+    lineHeight: 20,
+    marginBottom: 8,
+    color: '#333333'
   },
-  cardDescription: {
-    padding: theme.SIZES.BASE / 2
+  subtitle: {
+    fontFamily: 'Montserrat-Regular',
+    fontSize: 14,
+    lineHeight: 18,
+    color: '#666666'
+  },
+  description: {
+    fontFamily: 'Montserrat-Regular',
+    fontSize: 12,
+    lineHeight: 16,
+    marginTop: 8,
+    color: '#999999'
+  },
+  image: {
+    width: '100%',
+    height: 150,
+    borderRadius: 10,
+    marginBottom: 8
+  },
+  imageContainer: {
+    borderRadius: 7,
+    elevation: 1,
+    overflow: 'hidden'
   },
   imageContainer: {
     borderRadius: 7,
@@ -167,17 +191,18 @@ const styles = StyleSheet.create({
   fullImage: {
     height: 215
   },
-  shadow: {
-    shadowColor: '#8898AA',
-    shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 6,
-    shadowOpacity: 0.1,
-    elevation: 2
+  cta: {
+    fontFamily: 'Montserrat-Bold',
+    fontSize: 14,
+    color: '#FFFFFF'
   },
-  articleButton: {
-    fontFamily: 'montserrat-bold',
-    paddingHorizontal: 9,
-    paddingVertical: 7
+  ctaContainer: {
+    backgroundColor: '#333333',
+    borderRadius: 10,
+    alignSelf: 'flex-start',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginTop: 16
   }
 });
 

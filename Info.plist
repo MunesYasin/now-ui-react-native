@@ -1,0 +1,10 @@
+<key>CFBundleURLTypes</key>
+<array>
+  <dict>
+    <key>CFBundleURLSchemes</key>
+    <array>
+      <string>geo</string>
+      <string>https</string>
+    </array>
+  </dict>
+</array>

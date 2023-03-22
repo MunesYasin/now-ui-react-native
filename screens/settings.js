@@ -9,6 +9,7 @@ import {
   Pressable,
   StyleSheet,
   Linking,
+  Switch,
   Image
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -30,6 +31,9 @@ import io from 'socket.io-client';
 import { config } from '../assets/config/config';
 import QRCode from 'react-native-qrcode-svg';
 import Hyperlink from 'react-native-hyperlink';
+import InformationCard from "../components/informationCard"
+import Modal from 'react-native-modal';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 export default Onboarding = () => {
   //----------------------------------States-----------------------------------------//
@@ -38,11 +42,11 @@ export default Onboarding = () => {
   const [socket, setSocket] = useState(null);
   const [clientId, setClientId] = useState(null);
   const [senderId, setSenderId] = useState(null)
-  const [socialToggle, setSocialToggle] = useState(false);
-  const [personalToggle, setPersonalToggle] = useState(false);
+  const [categoriesToggle, setCategoriesToggle] = useState({});
   const [userDetails, setUserDetails] = useState(null)
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showUserDetailsModal, setShowUserDetailsModal] = useState(false);
   const [selectedCategorie, setSelectedCategouries] = useState(null)
+  const [acceptCategoriesList, setAcceptCategoriesList] = useState(null)
   //------------------------------------------------------------------------------------//
 
 
@@ -52,9 +56,9 @@ export default Onboarding = () => {
   useEffect(() => {
     const params = {};
     axios
-      .post('/getUserBean', params)
+      .post('/getMySecretArCode', params)
       .then((res) => {
-        setSecretQrCode(res.data.secretQrCode);
+        setSecretQrCode(res.data);
 
 
         const newSocket = io(config.backEndURL);
@@ -63,9 +67,9 @@ export default Onboarding = () => {
         newSocket.on('connect', () => {
           const id = newSocket.id;
           setClientId(id);
-          setSecretQrCode(`${id}+${res.data.secretQrCode}`);
+          setSecretQrCode(`${id}+${res.data}`);
 
-          newSocket.on('message', ({ sender, message }) => {
+          newSocket.on('message', ({ sender, message, secretQrCode }) => {
             if (message == "please select options") {
               setShowAcceptCategoriesModal(true);
               setSenderId(sender)
@@ -74,12 +78,12 @@ export default Onboarding = () => {
             if (Array.isArray(message) && message.length > 0) {
               const params = {
                 id: sender,
-                categouries: message
+                categouries: message,
+                secretQrCode: secretQrCode
               }
               setSelectedCategouries(message)
-              axios.post("/getUserBeanFromUserID", params).then(res => {
-                setShowDetailsModal(true)
-
+              axios.post("/getUserBeanFromUserIDAfterScanning", params).then(res => {
+                setShowUserDetailsModal(true)
                 setUserDetails(res.data)
               }).catch(error => {
                 console.log(error)
@@ -97,19 +101,31 @@ export default Onboarding = () => {
       .catch((error) => {
         console.log(error);
       });
+
+
+    let params2 = {
+
+    }
+    axios.post("/getUserBean", params2).then(res => {
+      setAcceptCategoriesList(res.data)
+    }).catch(error => {
+      console.log(error)
+    })
   }, []);
 
-  const handleSave = () => { };
 
   const acceptCategories = () => {
 
     let message = []
-    socialToggle && message.push("socialMedia")
-    personalToggle && message.push("personalInfo")
+    Object.entries(categoriesToggle).forEach(ele => {
+      if (ele[1]) {
+        message.push(ele[0])
+      }
+    })
     socket.emit('message',
       { sender: clientId, message: message, receipient: senderId });
     setShowAcceptCategoriesModal(false);
-
+    handleIgnorUser()
   }
   const handleLinkedInClick = async (ele) => {
     await Linking.openURL(ele.value);
@@ -121,34 +137,30 @@ export default Onboarding = () => {
     socket.emit('message',
       { sender: clientId, message: [], receipient: senderId });
     setShowAcceptCategoriesModal(false);
-
+    handleIgnorUser()
   }
   const handleAddUser = () => {
 
-    let params ={}
-    userDetails.personalInfo &&
-      (
-        userDetails.personalInfo.forEach(ele => {
-          if (ele.name == "name") {
-            params.name = ele.value
-          }
-          if (ele.name == "imageURL") {
-            params.imageURL = ele.value
-          }
-        })
 
-      )
-    params = {
-      ...params,
+    let params = {
+      imageURL: userDetails.imageURL,
       id: userDetails.id,
-      categouries: selectedCategorie
+      full_name: userDetails.full_name,
+      categouries: selectedCategorie,
+      secretQrCode: userDetails.secretQrCode,
     }
     axios.post("/addUserToMyList", params).then(res => {
-      setShowDetailsModal(false)
+      handleIgnorUser()
 
     }).catch(error => {
       console.log(error)
     })
+  }
+
+  const handleIgnorUser = () => {
+    setShowUserDetailsModal(false)
+    setUserDetails(null)
+    setCategoriesToggle({})
   }
   return (
     <View style={styles.container}>
@@ -163,160 +175,105 @@ export default Onboarding = () => {
 
       {
         showAcceptCategoriesModal &&
-        <View
-          style={{
-            flex: 1,
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: "100%",
-            position: "absolute"
-          }}>
-          <Animated.View
-            style={[
-              {
-                height: height,
-                transform: [
-                  {
-                    translateY: current.progress.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [height, height * 0.5],
-                      extrapolate: 'clamp',
-                    }),
-                  },
-                ],
-              },
-              styles.viewAnimated,
-            ]}>
-            <View style={styles.viewContainer}>
-              {/* <View style={styles.container}> */}
-              <View style={styles.blockContainer}>
-                <View style={styles.iconContainer}>
-                  {/* <Image source={require('path/to/social/media/icon.png')} style={styles.icon} /> */}
-                  <Text style={styles.text}>Social Media</Text>
-                </View>
-                <TouchableOpacity style={styles.toggleButton} onPress={() => setSocialToggle(!socialToggle)}>
-                  <Text style={styles.toggleText}>{socialToggle ? 'ON' : 'OFF'}</Text>
-                </TouchableOpacity>
-              </View>
 
-              <View style={styles.blockContainer}>
-                <View style={styles.iconContainer}>
-                  {/* <Image source={require('path/to/personal/info/icon.png')} style={styles.icon} /> */}
-                  <Text style={styles.text}>Personal Information</Text>
-                </View>
-                <TouchableOpacity style={styles.toggleButton} onPress={() => setPersonalToggle(!personalToggle)}>
-                  <Text style={styles.toggleText}>{personalToggle ? 'ON' : 'OFF'}</Text>
-                </TouchableOpacity>
-              </View>
+        <Modal
+          isVisible={showAcceptCategoriesModal}
+          onSwipeComplete={() => ignorCategories()}
+          swipeDirection={['down']}
+          style={styles.modal}
+          animationType="slide"
+          transparent={true}
+          animationDuration={100}
+        >
+          <View style={styles.viewContainer}>
+            <View style={styles.titleDiv}>
+              <TouchableOpacity onPress={() => {
+                ignorCategories()
+              }}>
+                <Icon name={`times`} size={30} style={styles.socialMediaIcon} />
 
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.button} onPress={() => acceptCategories()}>
-                  <Text style={styles.buttonText}>Add</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.button} onPress={() => ignorCategories()}>
-                  <Text style={styles.buttonText}>Ignore</Text>
-                </TouchableOpacity>
+              </TouchableOpacity>
+              <View>
+                <Text style={styles.titleText}>
+                  Select categouries
+                </Text>
               </View>
+              <View>
 
+              </View>
+            </View>
+            {
+              acceptCategoriesList && Object.entries(acceptCategoriesList).map(ele => {
+                if (ele[1] && Array.isArray(ele[1]) && ele[1].length > 0) {
+                  return (
+                    <View style={styles.blockContainer}>
+                      <View style={styles.iconContainer}>
+                        <Text style={styles.text}>{ele[0]}</Text>
+                      </View>
+
+                      <Switch
+                        trackColor={{ false: "#FFFFFF", true: "#8bb9e8" }}
+                        thumbColor={categoriesToggle[ele[0]] ? "#FFFFFF" : "#C6C6C6"}
+                        ios_backgroundColor="#3e3e3e"
+                        onValueChange={() => setCategoriesToggle({ ...categoriesToggle, [ele[0]]: categoriesToggle[ele[0]] ? !categoriesToggle[ele[0]] : true })}
+                        value={categoriesToggle[ele[0]]}
+                      />
+                    </View>
+                  )
+                }
+              })
+            }
+            <View style={{ height: "50%", flexDirection: "column", justifyContent: "flex-end" }}>
+              {/* <View style={styles.buttonContainer}> */}
+              <TouchableOpacity style={styles.saveButton} onPress={() => acceptCategories()}>
+                <Text style={styles.saveButtonText}>Add</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.saveButton} onPress={() => ignorCategories()}>
+                <Text style={styles.saveButtonText}>Ignore</Text>
+              </TouchableOpacity>
               {/* </View> */}
             </View>
-          </Animated.View>
-
-        </View >
+          </View>
+        </Modal>
       }
 
 
       {
-        showDetailsModal && userDetails &&
+        showUserDetailsModal && userDetails &&
 
-        <View
-          style={{
-            flex: 1,
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: "100%",
-            position: "absolute"
-          }}>
-          <Animated.View
-            style={[
-              {
-                height: height,
+        <Modal
+          isVisible={showUserDetailsModal && userDetails}
+          onSwipeComplete={() => handleIgnorUser()}
+          swipeDirection={['down']}
+          style={styles.modal}
+          animationType="slide"
+          transparent={true}
+          animationDuration={100}
+        >
+          <View style={styles.viewContainer}>
+            <View style={styles.titleDiv}>
+              <TouchableOpacity onPress={() => {
+                handleIgnorUser()
+              }}>
+                <Icon name={`times`} size={30} style={styles.socialMediaIcon} />
 
-                transform: [
-                  {
-                    translateY: current.progress.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [height, height * 0.25],
-                      extrapolate: 'clamp',
-                    }),
-                  },
-                ],
-              },
-              styles.viewAnimated,
-            ]}>
-            <View style={styles.viewContainer}>
-              {
+              </TouchableOpacity>
 
-                <View style={styles.container}>
-                  <View style={styles.profileHeader}>
-                    <View style={styles.profileImageWrapper}>
-                      <Image
-                        source={{ uri: 'https://via.placeholder.com/150' }}
-                        style={styles.profileImage}
-                      />
-                    </View>
-                    <Text style={styles.profileName}>{userDetails.personalInfo && userDetails.personalInfo.name}</Text>
-                  </View>
-                  <View style={styles.profileSection}>
-
-
-                    {/* ----------------------------------Personal Info section-------------------------------- */}
-                    {
-                      userDetails.personalInfo &&
-                      userDetails.personalInfo.map(ele => {
-                        return (
-                          <>
-                            <View style={styles.sectionRow}>
-                              <Ionicons name="mail-outline" size={24} style={styles.sectionIcon} />
-                              <Text style={styles.sectionLabel}>{ele.name}:</Text>
-                              <Text style={styles.sectionValue}>{ele.value}</Text>
-                            </View>
-                          </>
-                        )
-                      })
-                    }
-                    {/* ----------------------------------Personal Info section-------------------------------- */}
-
-
-                    {/* ----------------------------------Social media section-------------------------------- */}
-                    {
-                      userDetails.socialMedia &&
-                      <View style={styles.sectionRow}>
-
-                        {
-                          userDetails.socialMedia.map(ele => {
-                            return (
-                              <Ionicons name={`logo-${ele.name}`} size={50} style={styles.socialMediaIcon} onPress={() => handleLinkedInClick(ele)} />
-                            )
-                          })
-                        }
-                      </View>
-                    }
-                    {/* ----------------------------------Social media section-------------------------------- */}
-
-
-                  </View>
-                  <TouchableOpacity style={styles.saveButton} onPress={handleAddUser}>
-                    <Text style={styles.saveButtonText}>Add user</Text>
-                  </TouchableOpacity>
-                  {/* <TouchableOpacity style={styles.saveButton} onPress={handleViceVersaRequest}>
-                    <Text style={styles.saveButtonText}>Send request</Text>
-                  </TouchableOpacity> */}
-                </View>
-              }
             </View>
-          </Animated.View>
-        </View >
+            {
+              <>
+                <InformationCard userDetails={userDetails} />
+                <TouchableOpacity style={styles.saveButton} onPress={handleAddUser}>
+                  <Text style={styles.saveButtonText}>Add user</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.saveButton} onPress={handleIgnorUser}>
+                  <Text style={styles.saveButtonText}>Ignore</Text>
+                </TouchableOpacity>
+              </>
+
+            }
+          </View>
+        </Modal>
       }
 
     </View>
@@ -330,13 +287,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  modal: {
+    width: "100%",
+    margin: 0,
+    marginTop: 75,
 
+  },
+  titleDiv: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    height: 50,
+    marginBottom: 50
+  },
   blockContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginVertical: 10,
     marginLeft: 20,
-    justifyContent: "space-between"
+    justifyContent: "space-between",
+  },
+  titleText: {
+    fontSize: 25,
+    fontWeight: 'bold',
+    marginHorizontal: 10,
   },
   iconContainer: {
     flexDirection: 'row',
@@ -363,6 +336,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  blockContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 10,
+    marginLeft: 20,
+    justifyContent: "space-between",
+    backgroundColor: "#DCDCDC",
+    height: 50,
+    borderRadius: 15,
+    paddingLeft: 20,
+    paddingRight: 20
+  },
   buttonContainer: {
     flexDirection: 'row',
     marginVertical: 20,
@@ -383,7 +368,7 @@ const styles = StyleSheet.create({
 
   viewContainer: {
     flex: 1,
-    padding: 10,
+    padding: 15,
     backgroundColor: '#E5E5E5',
     borderRadius: 20,
     width: "100%",
@@ -457,6 +442,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     alignItems: 'center',
     marginTop: 20,
+    ...AppStyles.buttonShadow
   },
   saveButtonText: {
     color: 'white',

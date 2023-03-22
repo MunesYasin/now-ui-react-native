@@ -1,0 +1,21 @@
+{
+    "build": {
+        "releaseChannel": { "default": "production" },
+        "distribution": { "store": {} },
+      "ios": {
+        "bundleIdentifier": "com.yourcompany.yourapp",
+        "buildType": "release",
+        "config": {
+          "googleMapsApiKey": "YOUR_API_KEY_HERE"
+        }
+      },
+      "android": {
+        "package": "com.yourcompany.yourapp",
+        "buildType": "release",
+        "config": {
+          "googleMapsApiKey": "YOUR_API_KEY_HERE"
+        }
+      }
+    }
+  }
+  

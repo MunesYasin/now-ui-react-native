@@ -19,24 +19,34 @@ class Home extends React.Component {
     this.state = {
       my_users_list: null,
       selectedUser: null,
-      selectedCategouries:null
+      selectedCategouries: null,
+      my_user_list_after_filter: null
     }
   }
   componentDidMount() {
     let params = {}
+
     axios.post("/getMyUsersList", params).then(res => {
-      this.setState({ my_users_list: res.data })
+      console.log( res.data , "lllllllllllllllllllllllllllllllllllllllllllllllll")
+      this.setState({ my_users_list: res.data, my_user_list_after_filter: res.data })
     }).catch(error => {
       console.log(error)
     })
   }
 
 
+  getInputValue = (e) => {
 
+    let newUserList = this.state.my_users_list.filter((ele) => {
+      return ele[`full_name`] && ele[`full_name`].includes(e);
+    })
+    this.setState({ my_user_list_after_filter: newUserList });
+
+  }
   renderArticles = () => {
     return (
       <>
-        <HomeHeader search />
+        <HomeHeader search getInputValue={this.getInputValue} />
 
         {
           // this.state.selectedUser ?
@@ -45,34 +55,35 @@ class Home extends React.Component {
 
           //   </View>
           //   :
-            this.state.my_users_list &&
-            <ScrollView
+          this.state.my_user_list_after_filter && Array.isArray(this.state.my_user_list_after_filter) &&
+
+          <ScrollView
 
 
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.articles}
-            >
-              {this.state.my_users_list.map(ele => {
-                return (
-                  <TouchableOpacity style={styles.home} onPress={() => {
-                    this.setState({ selectedUser: ele.id , selectedCategouries : ele.categouries })
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.articles}
+          >
+            {this.state.my_user_list_after_filter.map(ele => {
+              return (
+                <TouchableOpacity style={styles.home} onPress={() => {
+                  this.setState({ selectedUser: ele.id, selectedCategouries: ele.categouries })
 
-                    this.props.selectUser({selected_user_id: ele.id , selected_user_categouries : ele.categouries})
-                    this.props.navigation.navigate('OtherUserDetails')
-                  }}>
+                  this.props.selectUser({ selected_user_id: ele.id, selected_user_categouries: ele.categouries })
+                  this.props.navigation.navigate('OtherUserDetails')
+                }}>
 
-                    <Card item={{
-                      title: ele.name,
-                      image: ele.imageURL ? ele.imageURL : require("../assets/imgs/profile-pic.png"),
-                      horizontal: true
+                  <Card item={{
+                    title: ele.full_name,
+                    image: ele.imageURL ? ele.imageURL : require("../assets/imgs/profile-pic.png"),
+                    horizontal: true
 
-                    }} horizontal />
-                  </TouchableOpacity>
+                  }} horizontal />
+                </TouchableOpacity>
 
 
-                );
-              })}
-            </ScrollView >
+              );
+            })}
+          </ScrollView >
 
         }
 

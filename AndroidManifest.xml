@@ -1,0 +1,25 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  package="com.yourpackage.name">
+  
+  <!-- ... -->
+  
+  <activity
+    android:name=".MainActivity"
+    android:label="@string/app_name"
+    android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
+    android:launchMode="singleTask"
+    android:windowSoftInputMode="adjustResize">
+
+    <!-- ... -->
+
+    <!-- Handle incoming URLs -->
+    <intent-filter>
+      <action android:name="android.intent.action.VIEW" />
+      <category android:name="android.intent.category.DEFAULT" />
+      <category android:name="android.intent.category.BROWSABLE" />
+      <data android:scheme="https" />
+      <data android:scheme="geo" />
+    </intent-filter>
+
+  </activity>
+</manifest>

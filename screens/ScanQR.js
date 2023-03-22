@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Text, View, StyleSheet, Button, TouchableOpacity, TextInput, Image, Linking, ScrollView } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import axios from '../assets/config/axios';
-import { Modal, TouchableHighlight, Dimensions } from 'react-native';
+import { TouchableHighlight, Dimensions } from 'react-native';
 import { FontAwesome, Entypo, Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import InformationCard from "../components/informationCard"
 import {
   Animated,
   Pressable,
@@ -15,8 +15,9 @@ import { useCardAnimation } from '@react-navigation/stack';
 import { AppStyles } from '../Appstyles';
 import io from 'socket.io-client';
 import { config } from '../assets/config/config';
-
-
+import base64 from 'base-64';
+import Modal from 'react-native-modal';
+import Icon from 'react-native-vector-icons/FontAwesome';
 export default function ScanQR() {
   //--------------------------------States------------------------------------//
   const [hasPermission, setHasPermission] = useState(null);
@@ -29,8 +30,7 @@ export default function ScanQR() {
   const [senderId, setSenderId] = useState(null);
   const [connectToSocket, setConnectToSocket] = useState(null)
   const [selectedCategorie, setSelectedCategorie] = useState(null)
-
-
+  const [secretQrCode, setSecretQrCode] = useState(null)
   //-------------------------------------------------------------------------//
 
 
@@ -40,6 +40,12 @@ export default function ScanQR() {
       const { status } = await BarCodeScanner.requestPermissionsAsync();
       setHasPermission(status === 'granted');
     })();
+    let params = {}
+    axios.post("/getMySecretArCode", params).then(res => {
+      setSecretQrCode(res.data)
+    }).catch(error => {
+      console.log(error)
+    })
   }, []);
 
   useEffect(() => {
@@ -67,17 +73,9 @@ export default function ScanQR() {
             setSelectedCategorie(message)
             let params = {
               secretQrCode: connectToSocket.data.split("+")[1],
-              // secretQrCode: "WWFz",
               categouries: message
             }
             axios.post("/getUserBeanFromQrCode", params).then(res => {
-
-              // let userDetailTempObject = { id: res.data.id }
-              // for (const key in res.data) {
-              //   res.data[key].forEach(ele => {
-              //     userDetailTempObject[key] = { ...userDetailTempObject[key], [ele.name]: ele.value }
-              //   })
-              // }
               setUserDetails(res.data)
             }).catch(error => {
               alert(error);
@@ -85,9 +83,9 @@ export default function ScanQR() {
           }
 
           if (sender == connectToSocket.data.split("+")[0] && Array.isArray(message) && message.length == 0) {
-
+            alert("the user doesnt want to appear anything")
+            handleIgonerUser()
           }
-
         })
       });
 
@@ -103,6 +101,7 @@ export default function ScanQR() {
 
 
   const handleBarCodeScanned = (data) => {
+    console.log(data,"faffafafafaf")
     setConnectToSocket(data)
   };
 
@@ -119,29 +118,16 @@ export default function ScanQR() {
   }
 
   const handleAddUser = () => {
-
-
-    let params={}
-    userDetails.personalInfo &&
-      (
-        userDetails.personalInfo.forEach(ele => {
-          if (ele.name == "name") {
-            params.name = ele.value
-          }
-          if (ele.name == "imageURL") {
-            params.imageURL = ele.value
-          }
-        })
-
-      )
-    params = {
-      ...params,
+    let params = {
+      imageURL: userDetails.imageURL,
+      full_name: userDetails.full_name,
       id: userDetails.id,
+      secretQrCode: userDetails.secretQrCode,
       categouries: selectedCategorie
     }
 
     axios.post("/addUserToMyList", params).then(res => {
-      setShowDetailsModal(false)
+      handleIgonerUser()
 
     }).catch(error => {
       console.log(error)
@@ -150,8 +136,14 @@ export default function ScanQR() {
 
   const handleViceVersaRequest = async () => {
     let userId = await AsyncStorage.getItem('userID');
+    userId = base64.decode(userId)
     socket.emit("message",
-      { sender: userId, message: selectedCategorie, receipient: connectToSocket.data.split("+")[0] })
+      { sender: userId, message: selectedCategorie, receipient: connectToSocket.data.split("+")[0], secretQrCode })
+  }
+
+  const handleIgonerUser = () => {
+    setShowDetailsModal(false)
+    setUserDetails(null)
   }
   return (
     <View style={styles.container}>
@@ -166,109 +158,43 @@ export default function ScanQR() {
       {
         showDetailsModal &&
 
-        <View
-          style={{
-            flex: 1,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-          <Animated.View
-            style={[
-              {
-                height: height,
-                transform: [
-                  {
-                    translateY: current.progress.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [height, height * 0.25],
-                      extrapolate: 'clamp',
-                    }),
-                  },
-                ],
-              },
-              styles.viewAnimated,
-            ]}>
-            <View style={styles.viewContainer}>
-              {
-                userDetails &&
-                <View style={styles.container}>
-                  <View style={styles.profileHeader}>
-                    <View style={styles.profileImageWrapper}>
-                      <Image
-                        source={{ uri: 'https://via.placeholder.com/150' }}
-                        style={styles.profileImage}
-                      />
-                    </View>
-                    <Text style={styles.profileName}>{userDetails.personalInfo && userDetails.personalInfo.name}</Text>
-                  </View>
-                  <View style={styles.profileSection}>
+        <Modal
+          isVisible={showDetailsModal}
+          onSwipeComplete={() => handleIgonerUser()}
+          swipeDirection={['down']}
+          style={styles.modal}
+          animationType="slide"
+          transparent={true}
+          animationDuration={100}
+        >
+          <View style={styles.viewContainer}>
+            <View style={styles.titleDiv}>
+              <TouchableOpacity onPress={() => {
+                handleIgonerUser()
+              }}>
+                <Icon name={`times`} size={30} style={styles.socialMediaIcon} />
 
+              </TouchableOpacity>
 
-                    {/* ----------------------------------Personal Info section-------------------------------- */}
-                    {
-                      userDetails.personalInfo &&
-                      userDetails.personalInfo.map(ele => {
-                        return (
-                          <>
-                            <View style={styles.sectionRow}>
-                              <Ionicons name="mail-outline" size={24} style={styles.sectionIcon} />
-                              <Text style={styles.sectionLabel}>{ele.name}:</Text>
-                              <Text style={styles.sectionValue}>{ele.value}</Text>
-                            </View>
-                          </>
-                        )
-                      })
-                      // <>
-
-                      //   <View style={styles.sectionRow}>
-                      //     <Ionicons name="mail-outline" size={24} style={styles.sectionIcon} />
-                      //     <Text style={styles.sectionLabel}>Email:</Text>
-                      //     <Text style={styles.sectionValue}>{userDetails.personalInfo.email}</Text>
-                      //   </View>
-                      //   <View style={styles.sectionRow}>
-                      //     <Ionicons name="call-outline" size={24} style={styles.sectionIcon} />
-                      //     <Text style={styles.sectionLabel}>Phone:</Text>
-                      //     <Text style={styles.sectionValue}>{userDetails.personalInfo.phoneNumber}</Text>
-                      //   </View>
-                      //   <View style={styles.sectionRow}>
-                      //     <Ionicons name="location-outline" size={24} style={styles.sectionIcon} />
-                      //     <Text style={styles.sectionLabel}>Location:</Text>
-                      //     <Text style={styles.sectionValue}>{userDetails.personalInfo.location}</Text>
-                      //   </View>
-                      // </>
-                    }
-                    {/* ----------------------------------Personal Info section-------------------------------- */}
-
-
-                    {/* ----------------------------------Social media section-------------------------------- */}
-                    {
-                      userDetails.socialMedia &&
-                      <View style={styles.sectionRow}>
-
-                        {
-                          userDetails.socialMedia.map(ele => {
-                            return (
-                              <Ionicons name={`logo-${ele.name}`} size={50} style={styles.socialMediaIcon} onPress={() => handleLinkedInClick(ele)} />
-                            )
-                          })
-                        }
-                      </View>
-                    }
-                    {/* ----------------------------------Social media section-------------------------------- */}
-
-
-                  </View>
-                  <TouchableOpacity style={styles.saveButton} onPress={handleAddUser}>
-                    <Text style={styles.saveButtonText}>Add user</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.saveButton} onPress={handleViceVersaRequest}>
-                    <Text style={styles.saveButtonText}>Send request</Text>
-                  </TouchableOpacity>
-                </View>
-              }
             </View>
-          </Animated.View>
-        </View >
+            {
+              userDetails &&
+              <>
+                <InformationCard userDetails={userDetails} />
+                <TouchableOpacity style={styles.saveButton} onPress={handleAddUser}>
+                  <Text style={styles.saveButtonText}>Add user</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.saveButton} onPress={handleViceVersaRequest}>
+                  <Text style={styles.saveButtonText}>Send request</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.saveButton} onPress={handleIgonerUser}>
+                  <Text style={styles.saveButtonText}>Ignore User</Text>
+                </TouchableOpacity>
+              </>
+
+            }
+          </View>
+        </Modal>
       }
     </View >
   );
@@ -279,6 +205,18 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'column',
     justifyContent: 'center',
+  },
+  modal: {
+    width: "100%",
+    margin: 0,
+    marginTop: 75,
+
+  },
+  titleDiv: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    height: 50,
+    marginBottom: 50
   },
   viewAnimated: {
     width: '100%',

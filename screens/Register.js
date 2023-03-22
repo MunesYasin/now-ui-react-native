@@ -8,6 +8,7 @@ import {
   Keyboard
 } from 'react-native';
 import { AppStyles } from '../Appstyles';
+import base64 from 'base-64';
 
 import { Block, Checkbox, Text, Button as GaButton, theme } from 'galio-framework';
 import { Platform, TouchableOpacity, View } from 'react-native';
@@ -62,13 +63,16 @@ class Register extends React.Component {
   setPassword = (e) => {
     this.setState({ password: e })
   }
-  storeToken = async (token) => {
+
+  storeTokenUserID = async (token, userID) => {
     try {
-      await AsyncStorage.setItem('userToken', token);
+        await AsyncStorage.setItem('userToken', token);
+        await AsyncStorage.setItem('userID', userID);
+
     } catch (error) {
-      console.log(error);
+        console.log(error);
     }
-  };
+};
   onRegister = () => {
 
     if (justNumber.test(this.state.userName)) {
@@ -106,18 +110,13 @@ class Register extends React.Component {
 
     axios.post("/signup", params).then(res => {
       this.setState({ registerResMessage: "success Sign up", loading: false, showAlert: true })
-      this.storeToken(res.data.token)
+      this.storeTokenUserID(res.data.token,base64.encode( res.data.user.id))
       this.props.navigation.navigate('VarificationAccount')
     }).catch(error => {
-      console.log(error, "error")
+      console.log(error)
       this.setState({ registerResMessage: "cannot sign up", loading: false, showAlert: true })
 
     })
-
-    // fetch('http://192.168.0.113:3031/signup',params)
-    // .then((response) => response.json())
-    // .then((data) => console.log(data));
-
 
 
 

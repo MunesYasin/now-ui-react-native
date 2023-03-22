@@ -38,6 +38,15 @@ export const AppStyles = {
   borderRadius: {
     main: 25,
     small: 5
+  },
+  buttonShadow:{
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   }
 };
 

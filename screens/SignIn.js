@@ -62,7 +62,7 @@ class Register extends React.Component {
     storeTokenUserID = async (token, userID) => {
         try {
             await AsyncStorage.setItem('userToken', token);
-            await AsyncStorage.setItem('userID', JSON.stringify(userID) );
+            await AsyncStorage.setItem('userID', userID);
 
         } catch (error) {
             console.log(error);
@@ -79,21 +79,13 @@ class Register extends React.Component {
 
         axios.post("/signin", params).then(res => {
             this.setState({ loading: false , registerResMessage: "",  showAlert: false  })
-            this.storeTokenUserID(res.data.token, res.data.user.id)
+            this.storeTokenUserID(res.data.token,base64.encode( res.data.user.id))
             this.props.navigation.navigate('App')
         }).catch(error => {
-            console.log(error, "error")
+            console.log(error)
             this.setState({ registerResMessage: "* User name or password is incorrect", loading: false, showAlert: true })
 
         })
-
-        // fetch('http://192.168.0.113:3031/signup',params)
-        // .then((response) => response.json())
-        // .then((data) => console.log(data));
-
-
-
-
 
     }
     render() {

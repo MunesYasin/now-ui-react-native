@@ -27,7 +27,7 @@ export default class Onboarding extends React.Component {
     componentDidMount() {
         const getToken = async () => {
             try {
-                const token = await AsyncStorage.getItem('userToken');
+                const token = await AsyncStorage.getItem('token');
                 if (token !== null) {
                     this.setState({ token: token })
                 }
